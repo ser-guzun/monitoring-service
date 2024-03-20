@@ -14,7 +14,7 @@ router = APIRouter(
 
 
 @router.get("/visited_domains")
-async def get_all_links(
+async def get_all_domains(
     uow: UOWDep,
     time_from: Optional[int] = None,
     time_to: Optional[int] = None,
