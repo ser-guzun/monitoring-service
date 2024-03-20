@@ -35,19 +35,25 @@ services:
     ports:
       - "5432:5432"
 
-  app-test1:
+  app-test:
     build:
       context: .
       dockerfile: Dockerfile_for_test
+    restart: on-failure
     depends_on:
       - db-test
     working_dir: /app
-    env_file:
-      - src/.env_test
+    environment:
+      - POSTGRES_USER=user
+      - POSTGRES_PASSWORD=pass
+      - POSTGRES_SERVER=db-test
+      - POSTGRES_PORT=5432
+      - POSTGRES_DB=dbname
+      - ECHO_DB=True
     healthcheck:
       test: timeout 5 bash -c 'cat < /dev/null > /dev/tcp/localhost/8000'
-      interval: 5s
-      timeout: 5s
+      interval: 30s
+      timeout: 10s
       retries: 12
     ports:
       - "8005:8000"
@@ -56,9 +62,9 @@ services:
     restart: always
     image: postgres:13-alpine
     environment:
-      - POSTGRES_USER=user_test
-      - POSTGRES_PASSWORD=pass_test
-      - POSTGRES_DB=dbname_test
+      - POSTGRES_USER=user
+      - POSTGRES_PASSWORD=pass
+      - POSTGRES_DB=dbname
     healthcheck:
       test: timeout 5 bash -c 'cat < /dev/null > /dev/tcp/localhost/5432'
       interval: 5s
