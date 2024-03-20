@@ -1,0 +1,70 @@
+version: "3"
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    depends_on:
+      - db
+    working_dir: /app
+    env_file:
+      - src/.env
+    healthcheck:
+      test: timeout 5 bash -c 'cat < /dev/null > /dev/tcp/localhost/8000'
+      interval: 5s
+      timeout: 5s
+      retries: 12
+    ports:
+      - "8000:8000"
+
+  db:
+    restart: always
+    image: postgres:13-alpine
+    environment:
+      - POSTGRES_USER=user
+      - POSTGRES_PASSWORD=pass
+      - POSTGRES_DB=dbname
+    healthcheck:
+      test: timeout 5 bash -c 'cat < /dev/null > /dev/tcp/localhost/5432'
+      interval: 5s
+      timeout: 5s
+      retries: 12
+    volumes:
+      - ./data/db:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+
+  app-test1:
+    build:
+      context: .
+      dockerfile: Dockerfile_for_test
+    depends_on:
+      - db-test
+    working_dir: /app
+    env_file:
+      - src/.env_test
+    healthcheck:
+      test: timeout 5 bash -c 'cat < /dev/null > /dev/tcp/localhost/8000'
+      interval: 5s
+      timeout: 5s
+      retries: 12
+    ports:
+      - "8005:8000"
+
+  db-test:
+    restart: always
+    image: postgres:13-alpine
+    environment:
+      - POSTGRES_USER=user_test
+      - POSTGRES_PASSWORD=pass_test
+      - POSTGRES_DB=dbname_test
+    healthcheck:
+      test: timeout 5 bash -c 'cat < /dev/null > /dev/tcp/localhost/5432'
+      interval: 5s
+      timeout: 5s
+      retries: 12
+    volumes:
+      - ./data/db:/var/lib/postgresql/data
+    ports:
+      - "5435:5432"
